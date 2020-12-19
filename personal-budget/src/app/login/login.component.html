@@ -1,0 +1,59 @@
+<div class="container-fluid">
+
+  <h1 class="row">Login</h1>
+
+  <main>
+
+      <div class="row">
+          <label for="type">Username</label>
+          <input type="text" name="username" id="username">
+      </div>
+
+      <div>
+          <label for="type">Password</label>
+          <input type="password" name="password" id="password">
+      </div>
+
+      <div>
+          <button onclick="login()">Login</button>
+          <button onclick="getDashboard()">Dashboard</button>
+      </div>
+
+  </main>
+</div>
+
+<script>
+  var token = '';
+
+  function login() {
+      const data = {
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value,
+      };
+      axios.post('/api/login', data)
+          .then(res => {
+              console.log(res);
+              document.getElementById('username').value = '';
+              document.getElementById('password').value = '';
+              if (res && res.data && res.data.success) {
+                  const token = res.data.token;
+                  localStorage.setItem('jwt', token);
+                  getDashboard();
+              }
+          });
+  }
+
+  function getDashboard() {
+      const token = localStorage.getItem('jwt');
+      axios.get('/api/dashboard', {
+          headers: {
+              'Authorization': `Bearer ${token}`
+          }
+      }).then(res => {
+          if (res && res.data && res.data.success) {
+              document.querySelector('h1.row').innerHTML = 'Dashboard';
+              document.querySelector('main').innerHTML = res.data.myContent;
+              history.pushState(res.data, null, '/dashboard');
+          }
+      });
+    }
